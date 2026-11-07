@@ -13,7 +13,7 @@
         "changelog": "**Changed**\n\n- The profile switcher shows everyone in your Bonfire as one grid, your own account first, with no per-account headings.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/Jwiggiff/Bonfire-JellyProfiles/releases/download/v1.7.2.1/Jellyfin.Profiles.zip",
-        "checksum": "00000000000000000000000000000000",
+        "checksum": "943250e4cc3383d8fa81418d0dc0afde",
         "timestamp": "2026-11-07T00:00:00Z"
       },
       {
