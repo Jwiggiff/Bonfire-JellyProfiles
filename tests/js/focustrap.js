@@ -219,6 +219,60 @@ check('down from the top right stays in its column', tvMove(1, 'down'), 'card4')
 check('up from the bottom row returns to the grid', tvMove(2, 'up'), 'card1');
 check('the footer is reached from the bottom row, and only from there', tvMove(2, 'down'), 'manage');
 
+// ── The merged Bonfire grid ──────────────────────────────────────────────────
+// The switcher draws every account in the Bonfire as one flat grid now, with no
+// per-household headings between them. So a household boundary can fall in the middle
+// of a row, and a row can end short — five cards, two to a row on a TV, leaves one
+// centred on its own. Same television geometry as above.
+console.log('\nThe merged Bonfire grid');
+console.log('-----------------------');
+
+const MERGED = (() => {
+    const VW = 1920, MODAL_W = 900, SEC = 33;
+    const MODAL_L = (VW - MODAL_W) / 2;
+    const GRID_L = MODAL_L + SEC, GRID_W = MODAL_W - 2 * SEC;
+    const CARD_W = 300, CARD_MX = 32, OUTER = CARD_W + 2 * CARD_MX;
+    const PER_ROW = Math.floor(GRID_W / OUTER);            // 2
+    const CARD_H = 15 + 280 + 24 + 38 + 24, ROW_GAP = 64, GRID_TOP = 272;
+    // own1, own2, own3 (this account), then linked1, linked2 (another household).
+    const names = ['own1', 'own2', 'own3', 'linked1', 'linked2'];
+    const rows = Math.ceil(names.length / PER_ROW);
+    const cards = names.map((name, i) => {
+        const row = Math.floor(i / PER_ROW);
+        const inRow = Math.min(PER_ROW, names.length - row * PER_ROW);
+        // justify-content: center — a short last row sits in the middle.
+        const rowStart = GRID_L + (GRID_W - inRow * OUTER) / 2;
+        return el(name, rowStart + (i % PER_ROW) * OUTER + CARD_MX,
+            GRID_TOP + row * (CARD_H + ROW_GAP), CARD_W, CARD_H);
+    });
+    const footerTop = GRID_TOP + rows * CARD_H + (rows - 1) * ROW_GAP + 133;
+    const manage = el('manage', MODAL_L + 300, footerTop, 267, 61);
+    return { items: cards.concat([manage]), cards };
+})();
+
+const mergedSurface = {
+    id: 'profiles-gate-overlay', isConnected: true,
+    contains: n => MERGED.items.indexOf(n) >= 0,
+    querySelectorAll: () => MERGED.items,
+    getAttribute: () => null
+};
+const mergedNav = Object.create(PP);
+mergedNav._overlayFocusables = () => MERGED.items;
+function mergedMove(from, dir) {
+    sandbox.document.activeElement = MERGED.cards[from];
+    focused = null;
+    mergedNav._moveOverlayFocus(mergedSurface, dir);
+    return focused;
+}
+
+check('right from this account\'s last card crosses into the linked household', mergedMove(2, 'right'), 'linked1');
+check('left from the linked household comes back to this account', mergedMove(3, 'left'), 'own3');
+check('down from this account reaches the linked card below', mergedMove(1, 'down'), 'linked1');
+check('up from the linked household returns to this account', mergedMove(3, 'up'), 'own2');
+check('down from the last full row reaches the lone centred card, not the footer', mergedMove(3, 'down'), 'linked2');
+check('up from the lone card returns to the grid', ['own3', 'linked1'].indexOf(mergedMove(4, 'up')) >= 0, true);
+check('the footer is reached from the last row', mergedMove(4, 'down'), 'manage');
+
 // The other half of the same fault. Upstream's focusManager (components/focusManager.js)
 // builds its focusable set from INPUT/TEXTAREA/SELECT/BUTTON/A plus `.focusable`, and
 // never consults [tabindex] — so a profile card, which is a div, is invisible to it while

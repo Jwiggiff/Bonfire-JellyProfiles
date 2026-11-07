@@ -395,7 +395,9 @@ function renderGrid(e) {
     overlay.id = 'profiles-gate-overlay';
     overlay.__attached = true;
     e.byId['profiles-gate-overlay'] = overlay;
-    e.p.renderOverlayContent(overlay, LIST);
+    // Linked household listed first, so the order check proves the grid sorts rather
+    // than echoing the server's order.
+    e.p.renderOverlayContent(overlay, LIST.filter(p => p.isBonfire).concat(LIST.filter(p => !p.isBonfire)));
     return overlay.innerHTML;
 }
 
@@ -407,11 +409,16 @@ function renderGrid(e) {
         let threw = null;
         try { html = renderGrid(e); } catch (err) { threw = err; }
         ok(label + ': the grid renders', !threw, threw && threw.stack.split('\n').slice(0, 3).join(' | '));
-        ok(label + ': your own profiles are "Your Bonfire"', html.indexOf('Your Bonfire') !== -1);
-        ok(label + ': and not "Kindred\'s Bonfire"', html.indexOf('Kindred&#39;s Bonfire') === -1
-           && html.indexOf("Kindred's Bonfire") === -1);
-        ok(label + ': a linked household is still somebody else\'s ("Ash\'s Bonfire")',
-           html.indexOf('Ash&#39;s Bonfire') !== -1 || html.indexOf("Ash's Bonfire") !== -1);
+        // One flat grid now, with no per-household headings. "Yours" shows as order:
+        // this household's cards come first, and the linked ones after carry the flame.
+        const order = (html.match(/data-id="[^"]+"/g) || []).map(m => m.slice(9, -1));
+        ok(label + ': your own profiles come first, then the linked household\'s ('
+           + order.join(', ') + ')',
+           order.join() === [MASTER, KID, OTHER_MASTER, OTHER_KID].join());
+        ok(label + ': no per-household headings',
+           html.indexOf('profiles-home-header') === -1 && html.indexOf('Bonfire</span>') === -1);
+        ok(label + ': only the linked household\'s cards carry the Bonfire badge',
+           (html.match(/profile-bonfire-indicator/g) || []).length === 2);
         ok(label + ': the stored master is now this household\'s',
            e.store[MASTER_KEY] && JSON.parse(e.store[MASTER_KEY]).masterUserId === MASTER);
     });

@@ -4643,79 +4643,54 @@
                 </div>
             `;
 
-            let sectionsHtml = '';
-            for (const k of groupKeys) {
-                const groupProfiles = grouped[k];
-                const isLocalGroup = (k === localMasterId);
+            // One flat grid for the whole Bonfire: no per-account headings. The current
+            // account's profiles come first (groupKeys is already sorted that way), then each
+            // linked household's in the same order the sections used to appear. Linked
+            // profiles still carry the flame badge on their card, so who is whose is not lost.
+            // Remote navigation needs nothing extra: _moveOverlayFocus is purely spatial and
+            // walks any arrangement of .profile-card elements.
+            let cardsHtml = groupKeys.map(k => grouped[k].map(p => renderCard(p)).join('')).join('');
 
-                let headerTitle = '';
-                let headerIcon = '';
-                let isBonfireIcon = false;
-
-                // Both headers use the campfire glyph — the section is called a Bonfire, so a
-                // house icon read as a different concept entirely. Your own Bonfire keeps the
-                // warm flame colour; linked ones are tinted by .bonfire-icon-color so the two
-                // remain distinguishable at a glance.
-                if (isLocalGroup) {
-                    headerTitle = t('gate.yourBonfire');
-                    headerIcon = "local_fire_department";
+            // Settings used to sit in the grid, as two cards in the same row as people.
+            // They are not profiles: Switcher Style is per-account and Your Bonfire is
+            // between accounts, and neither belongs to the grid of who can watch. They live
+            // behind Settings now — which also means the LAN-bypass toggle, the one that can
+            // hand somebody your admin rights, is somewhere you went on purpose rather than
+            // somewhere you can land while renaming a profile.
+            //
+            // Manage Profiles only. The gate answers one question — who is watching — and a
+            // card in that grid reads as a person. Adding one is administration, and it
+            // belongs on the screen named for it. Placed last, after every person in the
+            // Bonfire, rather than in the middle of the merged grid.
+            if (this.isManageMode) {
+                if (!atLimit) {
+                    cardsHtml += `
+                        <div class="profile-card action-add-profile focusable" tabindex="0">
+                            <div class="profile-avatar-container">
+                                <div class="profile-avatar add-avatar">+</div>
+                            </div>
+                            <div class="profile-name">${t('gate.addProfile')}</div>
+                        </div>
+                    `;
                 } else {
-                    const masterProfileForGroup = groupProfiles.find(p => p.isMaster);
-                    const groupName = masterProfileForGroup ? escapeHtml(masterProfileForGroup.profileName) : t('gate.guest');
-                    headerTitle = t('gate.bonfireOf', { name: groupName });
-                    headerIcon = "local_fire_department";
-                    isBonfireIcon = true;
+                    cardsHtml += `
+                        <div class="profiles-limit-notice">${t('gate.limitReached', { count: subProfileCount, max: maxSubProfiles })}</div>
+                    `;
                 }
-
-                let cardsHtml = groupProfiles.map(p => renderCard(p)).join('');
-
-                if (isLocalGroup) {
-                    // Settings used to sit here, as two cards in the same row as people.
-                    // They are not profiles: Switcher Style is per-account and Your Bonfire
-                    // is between accounts, and neither belongs to the grid of who can watch.
-                    // They live behind Settings now — which also means the LAN-bypass toggle,
-                    // the one that can hand somebody your admin rights, is somewhere you went
-                    // on purpose rather than somewhere you can land while renaming a profile.
-
-                    // Manage Profiles only. The gate answers one question — who is
-                    // watching — and a card in that grid reads as a person. Adding one is
-                    // administration, and it belongs on the screen named for it, which is
-                    // one button away and already where you go to rename or delete.
-                    if (this.isManageMode) {
-                        if (!atLimit) {
-                            cardsHtml += `
-                                <div class="profile-card action-add-profile focusable" tabindex="0">
-                                    <div class="profile-avatar-container">
-                                        <div class="profile-avatar add-avatar">+</div>
-                                    </div>
-                                    <div class="profile-name">${t('gate.addProfile')}</div>
-                                </div>
-                            `;
-                        } else {
-                            cardsHtml += `
-                                <div class="profiles-limit-notice">${t('gate.limitReached', { count: subProfileCount, max: maxSubProfiles })}</div>
-                            `;
-                        }
-                    }
-                }
-
-                sectionsHtml += `
-                    <div class="profiles-home-section">
-                        <div class="profiles-home-header">
-                            <span class="material-icons profiles-home-icon ${isBonfireIcon ? 'bonfire-icon-color' : ''}">${headerIcon}</span>
-                            <span class="profiles-home-title">${headerTitle}</span>
-                        </div>
-                        <div class="profiles-grid">
-                            ${cardsHtml}
-                        </div>
-                    </div>
-                `;
             }
 
-            // jpf-one-home: one household on screen, so its heading names nothing the title
-            // has not. Themes without a panel round each household hide it then.
+            // Still wrapped in one .profiles-home-section so themes keep their panel behind
+            // the grid; it just no longer carries a heading.
+            const sectionsHtml = `
+                <div class="profiles-home-section">
+                    <div class="profiles-grid">
+                        ${cardsHtml}
+                    </div>
+                </div>
+            `;
+
             overlay.innerHTML = `
-                <div class="profiles-modal-content anim-fade-in${groupKeys.length === 1 ? ' jpf-one-home' : ''}">
+                <div class="profiles-modal-content anim-fade-in">
                     <h1 class="profiles-title">${title}</h1>
                     ${sectionsHtml}
                     <div class="profiles-footer">
