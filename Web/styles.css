@@ -2848,9 +2848,12 @@ body.profiles-no-scroll [id*="spinner"] {
 }
 /* Thicker and further out. At three metres a 2px outline sitting 2px
    from the control is not findable, and finding the focused control is
-   the entire navigation model on a remote. */
+   the entire navigation model on a remote.
+   Not on .profile-card: a focused card already grows, rings its avatar and
+   glows (.profile-card:focus .profile-avatar), which reads from across the
+   room. A square box drawn around that on top was a second, competing
+   highlight. */
 .jpf-tv .profile-section :focus,
-.jpf-tv .profile-card:focus,
 .jpf-tv .profiles-btn:focus,
 .jpf-tv .jpf-choice:focus,
 .jpf-tv .jpf-theme-option:focus,

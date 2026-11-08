@@ -345,6 +345,10 @@ overrides('.jpf-tv .profile-name', '.profile-name', 'font-size');
 // P4-4: a focus ring findable from three metres.
 const tvFocus = ruleAt('.jpf-tv .profile-section :focus-visible');
 ok('TV focus ring is thicker', !!tvFocus && /outline:\s*4px/.test(tvFocus.body));
+// A focused profile card is marked by its own avatar (grow, ring, glow), not by a
+// square outline round the whole card on top of that.
+ok('no TV outline box around a focused profile card',
+    !/\.jpf-tv\s+\.profile-card:focus\s*[,{]/.test(bare));
 // And it must be alone: one unparseable selector invalidates a whole comma list,
 // which would delete the ring on exactly the browsers it is for.
 ok('the TV :focus-visible rule is not folded into a selector list',
