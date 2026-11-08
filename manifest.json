@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/AHouseOfBards/Bonfire-JellyProfiles/main/images/icon.jpg",
     "versions": [
       {
+        "version": "1.7.2.4",
+        "changelog": "**Fixed**\n\n- On a TV, a selected profile on the picker had a square box drawn round it as well as growing. It now just grows and glows.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Jwiggiff/Bonfire-JellyProfiles/releases/download/v1.7.2.4/Jellyfin.Profiles.zip",
+        "checksum": "00000000000000000000000000000000",
+        "timestamp": "2026-11-08T00:00:00Z"
+      },
+      {
         "version": "1.7.2.3",
         "changelog": "**Fixed**\n\n- On a TV, the switcher button in the header now matches the account button beside it in size, and grows with a coloured ring when selected, like the other header buttons.",
         "targetAbi": "10.11.0.0",
